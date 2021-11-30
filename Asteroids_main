@@ -1,0 +1,103 @@
+//holds all stars
+var stars = [];
+
+
+
+//Object star
+var Star = function(x, y, z) {
+    this.x = x;
+    this.y = y;
+    this.size = z;
+    this.image = getImage("cute/Star");
+};
+
+for (var x = 0; x < 100; x++) {
+    stars.push(new Star(random(0, 400), random(0,400), round(random(1,3))));
+}
+
+Star.prototype.draw = function() {
+    image(this.image, this.x, this.y, this.size * 8, this.size * 10);
+};
+
+var playScreenBackground = function() {
+    background(33, 44, 112);
+    
+    for (var i = 0; i < stars.length; i++) {
+        stars[i].draw();
+    }
+    
+    noStroke();
+    fill(128, 96, 58);
+    ellipse(22, 100, 150, 150);
+    
+    fill(138, 112, 60);
+    //brown middle arc top
+    arc(22, 96, 168, 4, 23, 155);  
+    //brown middle arc bottom
+    arc(22, 100, 168, 4, 23, 155);
+    
+    //brown bottom arc top
+    arc(22, 145, 131, 4, 23, 155);
+    //brown bottom arc bottom
+    arc(22, 149, 124, 4, 23, 155);
+    
+    //brown top arc top
+    arc(22, 38, 86, 4, 23, 155);
+    //brown top arc bottom
+    arc(22, 42, 102, 4, 23, 155);
+    
+    fill(196, 43, 43);
+    //red top arc
+    arc(22, 27, 46, 4, 23, 155);
+    //red middle arc
+    arc(22, 77, 158, 4, 23, 155);
+    //red bottom arc
+    arc(22, 136, 143, 4, 23, 155);
+    
+    fill(30, 168, 150);
+    //blue top arc
+    arc(22, 52, 113, 4, 23, 155);
+    //blue middle
+    arc(22, 98, 165, 4, 23, 155);
+    //blue bottom arc
+    arc(22, 168, 66, 4, 23, 155);
+    
+    //green ring
+    fill(62, 235, 35);
+    arc(22, 118, 223, 9, -37, 189);
+    fill(35, 182, 235);
+    //blue ring
+    arc(22, 110, 221, 9, -38, 189);
+
+//Uranus
+    ellipse(362, 297, 100, 100);
+    fill(155, 35, 235);
+    //purple ring
+    arc(362, 304, 172, 8, -4, 217);
+    
+    fill(252, 182, 250);
+    //first pink arc
+    arc(362, 254, 59, 4, 23, 155);
+    //second pink arc
+    arc(362, 280, 105, 4, 23, 155);
+    //third pink arc
+    arc(362, 313, 105, 4, 23, 155);
+    //fourth pink arc
+    arc(362, 341, 51, 4, 23, 155);
+    
+    fill(62, 235, 35);
+    //first green arc
+    arc(362, 251, 48, 4, 23, 155);
+    //second green arc
+    arc(362, 277, 102, 4, 23, 155);
+    //third green arc
+    arc(362, 310, 105, 4, 23, 155);
+    //fourth green arc
+    arc(362, 338, 57, 4, 23, 155);
+};
+
+playScreenBackground();
+
+draw = function() {
+    
+};
