@@ -2,28 +2,110 @@
 var stars = [];
 
 
-
 //Object star
 var Star = function(x, y, z) {
     this.x = x;
     this.y = y;
     this.size = z;
-    this.image = getImage("cute/Star");
+    this.picture = getImage("cute/Star");
 };
 
+//grabs star image from kahn library and draws it with its given x, y, and size.
+Star.prototype.draw = function() {
+     this.image = image(this.picture, this.x, this.y, this.size * 8, this.size * 10);
+};
+
+
+
+//for loop to push 100 start values into the stars array using the Star constructor.  It gives each star a random x and y postions along with and gives it a choice from 3 heights
 for (var x = 0; x < 100; x++) {
     stars.push(new Star(random(0, 400), random(0,400), round(random(1,3))));
 }
 
-Star.prototype.draw = function() {
-    image(this.image, this.x, this.y, this.size * 8, this.size * 10);
+
+//spaceship
+var Spaceship = function(jetX, jetY, jetSize) {
+    this.x = jetX;
+    this.y = jetY;
+    this.size = jetSize;
+    this.score = 0;
 };
 
+Spaceship.prototype.draw = function() {
+   //right wing top
+    fill(163, 153, 163);
+    stroke(0, 0, 0);
+    strokeWeight(1);
+    quad(this.x+this.size/150*214, this.y+this.size/150*207, this.x+this.size/150*280, this.y+this.size/150*227, this.x+this.size/150*280, this.y+this.size/150*196, this.x+this.size/150*214, this.y+this.size/150*131);
+    
+    //right wing bottom
+    quad(this.x+this.size/150*214, this.y+this.size/150*280, this.x+this.size/150*265, this.y+this.size/150*282, this.x+this.size/150*265, this.y+this.size/150*251, this.x+this.size/150*214, this.y+this.size/150*221);
+
+    //left wing top
+    fill(163, 153, 163);
+    quad(this.x+this.size/150*186, this.y+this.size/150*207, this.x+this.size/150*120, this.y+this.size/150*227, this.x+this.size/150*120, this.y+this.size/150*196, this.x+this.size/150*186, this.y+this.size/150*131);
+    //left wing bottom
+    quad(this.x+this.size/150*186, this.y+this.size/150*280, this.x+this.size/150*135, this.y+this.size/150*282, this.x+this.size/150*135, this.y+this.size/150*251, this.x+this.size/150*186, this.y+this.size/150*221);
+   
+    //body
+    stroke(0, 0, 0);
+    strokeWeight(1);
+    fill(163, 153, 163);
+    rect(this.x+this.size/150*185, this.y+this.size/150*281, this.size/150*30, this.size/150*-153);
+    triangle(this.x+this.size/150*185, this.y+this.size/150*128, this.x+this.size/150*215, this.y+this.size/150*128, this.x+this.size/150*200, this.y+this.size/150*71);
+    fill(111, 123, 217);
+    ellipse(this.x+this.size/150*201, this.y+this.size/150*145, this.size/150*17, this.size/150*37);
+    noFill();
+    fill(255, 255, 255);
+    rect(this.x+this.size/150*192, this.y+this.size/150*143, this.size/150*17, this.size/150*6);
+    
+    
+    //spaceship tip
+    stroke(0, 0, 0);
+    strokeWeight(2);
+    line(this.x+this.size/150*200, this.y+this.size/150*77, this.x+this.size/150*200, this.y+this.size/150*75);
+    
+    
+    //detail
+    stroke(0, 0, 0);
+    fill(155, 147, 217);
+    strokeWeight(1);
+    rect(this.x+this.size/150*137, this.y+this.size/150*269, this.size/150*15, this.size/150*8);
+    rect(this.x+this.size/150*152, this.y+this.size/150*269, this.size/150*15, this.size/150*8);
+    rect(this.x+this.size/150*246, this.y+this.size/150*269, this.size/150*15, this.size/150*8);
+    rect(this.x+this.size/150*231, this.y+this.size/150*269, this.size/150*15, this.size/150*8);
+    
+    
+    //booster left
+    fill(0, 0, 0);
+    noStroke();
+    rect(this.x+this.size/150*179, this.y+this.size/150*240, this.size/150*10, this.size/150*49, this.size/150*20);
+    strokeWeight(3);
+    stroke(255, 0, 0);
+    line(this.x+this.size/150*180, this.y+this.size/150*281, this.x+this.size/150*187, this.y+this.size/150*281);
+    
+    //booster right
+    fill(0, 0, 0);
+    noStroke();
+    rect(this.x+this.size/150*211, this.y+this.size/150*240, this.size/150*10, this.size/150*49, this.size/150*20);
+    strokeWeight(3);
+    stroke(255, 0, 0);
+    line(this.x+this.size/150*220, this.y+this.size/150*281, this.x+this.size/150*211, this.y+this.size/150*281);
+    
+    //flame
+    fill(189, 15, 15);
+    strokeWeight(1);
+    stroke(15, 115, 191);
+    triangle(this.x+this.size/150*200, this.y+this.size/150*338, this.x+this.size/150*191, this.y+this.size/150*281, this.x+this.size/150*209, this.y+this.size/150*281);  
+};
+
+
+
+//contains background color, all stars, and static planets
 var playScreenBackground = function() {
     background(33, 44, 112);
-    
-    for (var i = 0; i < stars.length; i++) {
-        stars[i].draw();
+    for (var x = 0; x < 100; x++) {
+        stars[x].draw();
     }
     
     noStroke();
@@ -96,8 +178,15 @@ var playScreenBackground = function() {
     arc(362, 338, 57, 4, 23, 155);
 };
 
-playScreenBackground();
 
-draw = function() {
-    
+
+//creates a spaceship
+var draw = function() {
+    //creates a grayJet using Spaceship constructor function and updates mouse positon
+    var grayJet = new Spaceship(mouseX - 40, mouseY - 50, 30);
+
+    playScreenBackground();
+    grayJet.draw();
 };
+
+
