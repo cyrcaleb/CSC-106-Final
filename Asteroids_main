@@ -1,6 +1,13 @@
+var stillPlaying;
+//number of starting rocks/asteroids
+var numRocks = 8;
+
+
 //holds all stars
 var stars = [];
 
+//holds all asteroids
+var asteroids = [];
 
 //Object star
 var Star = function(x, y, z) {
@@ -28,10 +35,10 @@ var Spaceship = function(jetX, jetY, jetSize) {
     this.x = jetX;
     this.y = jetY;
     this.size = jetSize;
-    this.score = 0;
+    this.score = 0;  //health if needed
 };
 
-//Spaceship draw prototype
+//Spaceship draw method
 Spaceship.prototype.draw = function() {
    //right wing top
     fill(163, 153, 163);
@@ -100,7 +107,50 @@ Spaceship.prototype.draw = function() {
     triangle(this.x+this.size/150*200, this.y+this.size/150*338, this.x+this.size/150*191, this.y+this.size/150*281, this.x+this.size/150*209, this.y+this.size/150*281);  
 };
 
+//rock/obstacle constructor
+var Asteroid = function(x, y, width) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = this.width * (5/3);
+    this.image = getImage("cute/Rock");
+    this.rockSpeed = round(random(1,5));
+};
 
+//asteroid draw method
+Asteroid.prototype.draw = function() {
+    image(getImage("cute/Rock"), this.x, this.y, this.width, this.height);
+};
+
+//Asteroid falling method
+Asteroid.prototype.fall = function() {
+    this.y = this.y + this.rockSpeed;
+    if (this.y > 380) {
+        this.y = -50;
+        this.x = random(0, 380);
+    }
+};
+
+
+//Collision detection with Spaceship
+Asteroid.prototype.hitDetect = function() {
+    if(mouseX - 40 <= this.x &&
+    mouseX + 13 >= this.x &&
+    mouseY - 55 <= this.y &&
+    mouseY - 5 >= this.y) {
+        stillPlaying = false;
+        //sets rocks x-position off screen if touched
+        this.x = 1000;
+        //makes it so the rock never comes back on screen
+        this.rockSpeed = 0;
+    }
+};
+
+
+//creates rocks using rock constructor
+for (var i = 0; i < numRocks; i++) {
+    asteroids.push(new Asteroid(random(0, 380), random(-400, 0), 30));
+}
 
 //contains background color, all stars, and static planets
 var playScreenBackground = function() {
@@ -188,6 +238,13 @@ var draw = function() {
 
     playScreenBackground();
     grayJet.draw();
+    
+    //for all asteroids/rocks it applies draw, motion, and hit detection methods
+    for (var i = 0; i < numRocks; i++) {
+        asteroids[i].draw();
+        asteroids[i].fall();
+        asteroids[i].hitDetect();
+    }
 };
 
 
