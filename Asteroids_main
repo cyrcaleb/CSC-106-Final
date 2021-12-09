@@ -159,7 +159,7 @@ Asteroid.prototype.hitDetect = function() {
     }
 };
 
-//Constructor function for buttons
+//Khan constructor function for buttons slightly modified to include colors
 var Button = function(config) {
     this.x = config.x || 0;
     this.y = config.y || 0;
