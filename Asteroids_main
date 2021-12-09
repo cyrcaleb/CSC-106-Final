@@ -1,7 +1,20 @@
-var stillPlaying;
-//number of starting rocks/asteroids
-var numRocks = 8;
+/* Program description */
 
+//determines which screen is being shown
+var sceneNumber = 0;
+
+//determines whether or not the game is running
+var stillPlaying = false;
+
+//number of starting rocks/asteroids
+var numRocks = 16;
+
+//Determines what kind of message to give the user when the game ends
+var winState;
+
+//Timer variables to track how long the game has been running for (start as undefined)
+var startTime;
+var gameTime;
 
 //holds all stars
 var stars = [];
@@ -22,20 +35,16 @@ Star.prototype.draw = function() {
      this.image = image(this.picture, this.x, this.y, this.size * 8, this.size * 10);
 };
 
-
-
 //for loop to push 100 start values into the stars array using the Star constructor.  It gives each star a random x and y postions along with and gives it a choice from 3 heights
 for (var x = 0; x < 100; x++) {
     stars.push(new Star(random(0, 400), random(0,400), round(random(1,3))));
 }
-
 
 //Spaceship constructor
 var Spaceship = function(jetX, jetY, jetSize) {
     this.x = jetX;
     this.y = jetY;
     this.size = jetSize;
-    this.score = 0;  //health if needed
 };
 
 //Spaceship draw method
@@ -107,6 +116,12 @@ Spaceship.prototype.draw = function() {
     triangle(this.x+this.size/150*200, this.y+this.size/150*338, this.x+this.size/150*191, this.y+this.size/150*281, this.x+this.size/150*209, this.y+this.size/150*281);  
 };
 
+//Splash screen decorative spaceship
+var splashShip = new Spaceship(122, 135, 60);
+
+//Win screen decorative spaceship
+var winShip = new Spaceship(160, 125, 75);
+
 //rock/obstacle constructor
 var Asteroid = function(x, y, width) {
     this.x = x;
@@ -131,26 +146,456 @@ Asteroid.prototype.fall = function() {
     }
 };
 
-
 //Collision detection with Spaceship
 Asteroid.prototype.hitDetect = function() {
     if(mouseX - 40 <= this.x &&
     mouseX + 13 >= this.x &&
-    mouseY - 55 <= this.y &&
+    mouseY - 70 <= this.y &&
     mouseY - 5 >= this.y) {
+        //ends the game with the lose condition fulfilled
         stillPlaying = false;
-        //sets rocks x-position off screen if touched
-        this.x = 1000;
-        //makes it so the rock never comes back on screen
-        this.rockSpeed = 0;
+        winState = false;
+        sceneNumber = 2;
     }
 };
 
+//Khan constructor function for buttons slightly modified to include colors
+var Button = function(config) {
+    this.x = config.x || 0;
+    this.y = config.y || 0;
+    this.width = config.width || 150;
+    this.height = config.height || 50;
+    this.label = config.label || "Click";
+    this.onClick = config.onClick || function() {};
+    this.color = config.color || color(0, 255, 255);
+    this.stroke = config.stroke || color(255, 255, 255);
+    this.text = config.text || color(0, 0, 0);
+};
+
+//Draws the button on screen
+Button.prototype.draw = function() {
+    fill(this.color);
+    stroke(this.stroke);
+    rect(this.x, this.y, this.width, this.height, 5);
+    fill(this.text);
+    textSize(19);
+    textAlign(CENTER, CENTER);
+    text(this.label, this.x+(this.width/2), this.y+this.height/2);
+};
+
+//Checks if the mouse is inside a button's boundaries
+Button.prototype.isMouseInside = function() {
+    return mouseX > this.x &&
+           mouseX < (this.x + this.width) &&
+           mouseY > this.y &&
+           mouseY < (this.y + this.height);
+};
+
+//Executes a button's onClick function if isMouseInside returns true
+Button.prototype.handleMouseClick = function() {
+    if (this.isMouseInside()) {
+        this.onClick();
+    }
+};
+
+//Start button to display on the splash screen (starts the game)
+var startButton = new Button({
+    x: 150,
+    y: 300,
+    width: 100,
+    height: 50,
+    label: "Start",
+    onClick: function() {
+        //Sets sceneNumber to 1, changing the screen displayed and starting the timer
+        stillPlaying = true;
+        sceneNumber = 1;
+        startTime = millis();
+        return startTime;
+    },
+    color: color(255, 255, 255),
+    stroke: color(0, 0, 0)
+});
+
+//Reset button to display on the win/game over screen (resets game/timer)
+var resetButton = new Button({
+    x: 90,
+    y: 300,
+    width: 100,
+    height: 50,
+    label: "Reset",
+    onClick: function() {
+        //Sets sceneNumber to 1, changing the screen displayed and reseting the timer
+        stillPlaying = true;
+        sceneNumber = 1;
+        startTime = millis();
+        return startTime;
+    },
+    color: color(255, 255, 255),
+    stroke: color(0, 0, 0)
+});
+
+//Menu button which returns the player to the splash screen
+var menuButton = new Button({
+    x: 210,
+    y: 300,
+    width: 100,
+    height: 50,
+    label: "Menu",
+    onClick: function() {
+        //Sets sceneNumber to 1, changing the screen displayed and reseting the timer
+        stillPlaying = false;
+        sceneNumber = 0;
+    },
+    color: color(255, 255, 255),
+    stroke: color(0, 0, 0)
+});
+
+//Constructor for Connor's bitmoji
+var connorBitmoji = function(x, y, h) {
+    this.x = x;
+    this.y = y;
+    this.h = h;
+    this.score = 0;
+};
+
+//Draw method for Connor's bitmoji
+connorBitmoji.prototype.draw = function() {
+    // Head
+    fill(255, 205, 148);
+    noStroke();
+    ellipse(this.x, this.y, (this.h / 100) * 75, (this.h / 100) * 85);
+    
+    // Jaw
+    noStroke();
+    fill(33, 44, 112);
+    ellipse(this.x - (this.h / 100) * 37, this.y + (this.h / 100) * 40, (this.h / 100) * 32, (this.h / 100) * 40);
+    ellipse(this.x + (this.h / 100) * 37, this.y + (this.h / 100) * 40, (this.h / 100) * 32, (this.h / 100) * 40);
+   
+    // Hair
+    noStroke();
+    fill(79, 51, 25);
+    quad(this.x - (this.h / 100) * 35, this.y - (this.h / 100) * 15, this.x - (this.h / 100) * 28, this.y - (this.h / 100) * 31, this.x - (this.h / 100) * 15, this.y - (this.h / 100) * 40, this.x - (this.h / 100) * 32, this.y - (this.h / 100) * 7);
+    quad(this.x + (this.h / 100) * 35, this.y - (this.h / 100) * 15, this.x + (this.h / 100) * 28, this.y - (this.h / 100) * 31, this.x + (this.h / 100) * 15, this.y - (this.h / 100) * 40, this.x + (this.h / 100) * 32, this.y - (this.h / 100) * 7);
+   
+    // Eyes
+    fill(255, 255, 255);
+    ellipse(this.x - (this.h / 100) * 15, this.y - (this.h / 100) * 10, (this.h / 100) * 13, (this.h / 100) * 10);
+    ellipse(this.x + (this.h / 100) * 15, this.y - (this.h / 100) * 10, (this.h / 100) * 13, (this.h / 100) * 10);
+    fill(0, 94, 255);
+    ellipse(this.x - (this.h / 100) * 15, this.y - (this.h / 100) * 10, (this.h / 100) * 8, (this.h / 100) * 5);
+    ellipse(this.x + (this.h / 100) * 15, this.y - (this.h / 100) * 10, (this.h / 100) * 8, (this.h / 100) * 5);
+    fill(0, 0, 0);
+    ellipse(this.x - (this.h / 100) * 15, this.y - (this.h / 100) * 10, (this.h / 100) * 5, (this.h / 100) * 4);
+    ellipse(this.x + (this.h / 100) * 15, this.y - (this.h / 100) * 10, (this.h / 100) * 5, (this.h / 100) * 4);
+    
+    // Eyebrows
+    stroke(61, 40, 20);
+    strokeWeight(2);
+    noFill();
+    arc(this.x - (this.h / 100) * 15, this.y - (this.h / 100) * 12, (this.h / 100) * 20, (this.h / 100) * 10, 200, 340);
+    arc(this.x + (this.h / 100) * 15, this.y - (this.h / 100) * 12, (this.h / 100) * 20, (this.h / 100) * 10, 200, 340);
+    
+    // Ears
+    noStroke();
+    fill(255, 205, 148);
+    ellipse(this.x - (this.h / 100) * 34, this.y, (this.h / 100) * 16, (this.h / 100) * 21);
+    ellipse(this.x + (this.h / 100) * 34, this.y, (this.h / 100) * 16, (this.h / 100) * 21);
+    stroke(0,0,0);
+    strokeWeight(1);
+    arc(this.x - (this.h / 100) * 35, this.y, (this.h / 100) * 6, (this.h / 100) * 11, 110, 270);
+    arc(this.x + (this.h / 100) * 35, this.y, (this.h / 100) * 6, (this.h / 100) * 11, -90, 70);
+   
+    // Mouth
+    strokeWeight(1);
+    fill(227, 113, 113);
+    arc(this.x, this.y + (this.h / 100) * 25, (this.h / 100) * 25, (this.h / 100) * 10, -30, 210);
+    arc(this.x, this.y + (this.h / 100) * 26, (this.h / 100) * 22, (this.h / 100) * 6, 210, 330);
+    noFill();
+    arc(this.x, this.y + (this.h / 100) * 24, (this.h / 100) * 25, (this.h / 100) * 5, -30, 210);
+   
+    // Nose
+    stroke(0,0,0);
+    strokeWeight(1.2);
+    noFill();
+    arc(this.x, this.y + (this.h / 100) * 7, (this.h / 100) * 5, (this.h / 100) * 10, -90, 113);
+  
+    // Hat
+    stroke(0,0,0);
+    strokeWeight(1.2);
+    fill(0, 119, 237);
+    quad(this.x - (this.h / 100) * 29, this.y - (this.h / 100) * 37, this.x + (this.h / 100) * 29, this.y - (this.h / 100) * 37, this.x + (this.h / 100) * 33, this.y - (this.h / 100) * 23, this.x - (this.h / 100) * 33, this.y - (this.h / 100) * 23);
+    noFill();
+    arc(this.x, this.y - (this.h / 100) * 31, (this.h / 100) * 60, (this.h / 100) * 43, 200, 340);
+    fill(0, 119, 237);
+    noStroke();
+    arc(this.x, this.y - (this.h / 100) * 31, (this.h / 100) * 60, (this.h / 100) * 43, 190, 350);
+    fill(0, 22, 166);
+    quad(this.x - (this.h / 100) * 17, this.y - (this.h / 100) * 31, this.x - (this.h / 100) * 18, this.y - (this.h / 100) * 25,this.x + (this.h / 100) * 18, this.y - (this.h / 100) * 25, this.x + (this.h / 100) * 17, this.y - (this.h / 100) * 31);
+    fill(79, 51, 25);
+    stroke(0,0,0);
+    arc(this.x, this.y - (this.h / 100) * 33, (this.h / 100) * 30, (this.h / 100) * 16, 180, 361);
+    line(this.x - (this.h / 100) * 15, this.y - (this.h / 100) * 33, this.x + (this.h / 100) * 15, this.y - (this.h / 100) * 33);
+
+    // Shirt
+    noStroke();
+    fill(103, 194, 93);
+    quad(this.x - (this.h / 100) * 40, this.y + (this.h / 100) * 42, this.x + (this.h / 100) * 40, this.y + (this.h / 100) * 42, this.x + (this.h / 100) * 58, this.y + (this.h / 100) * 70, this.x - (this.h / 100) * 58, this.y + (this.h / 100) * 70);
+    ellipse(this.x - (this.h / 100) * 39, this.y + (this.h / 100) * 57, (this.h / 100) * 36, (this.h / 100) * 25);
+    ellipse(this.x - (this.h / 100) * 52, this.y + (this.h) * 64, (this.h / 100) * 12, (this.h / 100) * 12);
+    ellipse(this.x + (this.h / 100) * 39, this.y + (this.h / 100) * 57, (this.h / 100) * 36, (this.h / 100) * 25);
+    ellipse(this.x + (this.h / 100) * 52, this.y + (this.h / 100) * 64, (this.h / 100) * 12, (this.h / 100) * 12);
+    fill(255, 205, 148);
+    ellipse(this.x, this.y + (this.h / 100) * 44, (this.h / 100) * 50, (this.h / 100) * 8);
+    fill(0, 0, 0);
+    textSize((this.h / 100) * 16);
+    textAlign(BASELINE, BASELINE);
+    text("CM", this.x - (this.h / 100) * 15, this.y + (this.h / 100) * 52, (this.h / 100) * 30, (this.h / 100) * 20);
+};
+
+//Constructor for Caleb's bitmoji
+var BitmojiCyr = function(bitX, bitY, bitM) {
+    this.x = bitX;
+    this.y = bitY;
+    this.size = bitM;
+};
+
+//Draw method for Caleb's bitmoji
+BitmojiCyr.prototype.draw = function() {
+   
+    //left ear
+    strokeWeight(1);
+    fill(235, 185, 158);
+    arc(this.x+this.size/150*44, this.y+this.size/150*99, this.size/150*14, this.size/150*38, 355, 680);
+    
+    //ear outline left
+    noStroke();
+    fill(252, 154, 154);
+    arc(this.x+this.size/150*44, this.y+this.size/150*99, this.size/150*7, this.size/150*22, 288, 784);
+    
+    //right ear
+    stroke(0, 0, 0);
+    fill(235, 185, 158);
+    arc(this.x+this.size/150*156, this.y+this.size/150*99, this.size/150*14, this.size/150*38, 229, 488);
+    
+    //ear outline right
+    noStroke();
+    fill(252, 154, 154);
+    arc(this.x+this.size/150*156, this.y+this.size/150*99, this.size/150*7, this.size/150*22, 193, 581);
+    stroke(0, 0, 0);
+
+
+
+    //head base
+    noStroke();
+    fill(235, 185, 158);
+    ellipse(this.x+this.size/150*100,this.y+this.size/150*100, this.size/150*110, this.size/150*142); 
+    stroke(0, 0, 0);
+    
+    //left jaw
+    noStroke();
+    fill(33, 44, 112);
+    quad(this.x+this.size/150*45, this.y+this.size/150*131, this.x+this.size/150*54, this.y+this.size/150*168, this.x +this.size/150*100, this.y+this.size/150*182, this.x+this.size /150*45, this.y+this.size/150*135);
+    
+    //right jaw
+    quad(this.x+this.size/150*154, this.y+this.size/150*131, this.x+this.size/150*154, this.y+this.size/150*168, this.x+this.size/150*100, this.y+this.size/150*182, this.x+this.size /150*155, this.y+this.size/150*135);
+    
+    //neck
+    noStroke();
+    fill(235, 185, 158);
+    quad(this.x+this.size/150*90, this.y+this.size/150*170, this.x+this.size/150*110, this.y+this.size/150*170, this.x+this.size/150*112, this.y+this.size/150*178, this.x+this.size /150*88, this.y+this.size/150*178);
+    
+    //throat
+    arc(this.x+this.size/150*100, this.y+this.size/150*182, this.size/150*31, this.size/150*17, -34, 404); 
+
+
+
+    //left eye base
+    stroke(0, 0, 0);
+    fill(255, 255, 255); 
+    ellipse(this.x+this.size/150*75,this.y+this.size/150*87, this.size/150*20, this.size/150*15);
+    
+    //left cornea
+    fill(201, 199, 137);
+    ellipse(this.x+this.size/150*75,this.y+this.size/150*88, this.size/150*8, this.size/150*7);
+    
+    //left pupil
+    fill(0, 0, 0);
+    ellipse(this.x+this.size/150*75,this.y+this.size/150*88, this.size/150*2,this.size/150*2);
+    
+    //left eye socket
+    stroke(0, 0, 0);
+    fill(235, 185, 158); 
+    arc(this.x+this.size/150*75, this.y+this.size/150*87, this.size/150*28, this.size/150*17,198, 330); 
+    
+    //right eye base
+    fill(255, 255, 255);  
+    ellipse(this.x+this.size/150*125,this.y+this.size/150*87,  this.size/150*20, this.size/150*15); 
+    
+    //right cornea
+    fill(201, 199, 137);
+    ellipse(this.x+this.size/150*125,this.y+this.size/150*88,  this.size/150*8, this.size/150*7);
+    
+    //right pupil
+    fill(0, 0, 0);
+    ellipse(this.x+this.size/150*125,this.y+this.size/150*88,  this.size/150*2,this.size/150*2);
+    
+    //right eye socket
+    stroke(0, 0, 0);
+    fill(235, 185, 158); 
+    arc(this.x+this.size/150*125, this.y+this.size/150*87, this.size/150*28, this.size/150*17, 203, 333);
+
+
+
+    //hair on left side
+    fill(0, 0, 0);
+    quad(this.x+this.size/150*44, this.y+this.size/150*54, this.x +this.size/150*47, this.y+this.size/150*117, this.x+this.size  /150*51, this.y+this.size/150*70, this.x+this.size/150*89, this.y+this.size/150*57);
+    
+    //hair on right side
+    fill(0, 0, 0);
+    quad(this.x+this.size/150*156, this.y+this.size/150*54, this.x+this.size/150*153, this.y+this.size/150*117, this.x+this.size/150*149, this.y+this.size/150*70, this.x+this.size  /150*111, this.y+this.size/150*57);
+    
+    //left eyebrow
+    quad(this.x+this.size/150*58, this.y+this.size/150*75, this.x +this.size/150*80, this.y+this.size/150*72, this.x+this.size/150 *87, this.y+this.size/150*73, this.x+this.size/150*80, this.y +this.size/150*69);
+    
+    //right eyebrow
+    quad(this.x+this.size/150*142, this.y+this.size/150*75, this.x+this.size/150*120, this.y+this.size/150*72, this.x +this.size/150*113, this.y+this.size/150*73, this.x+this.size  /150*120, this.y+this.size/150*69);
+
+
+
+    //nose left-side bump
+    noFill();
+    stroke(69, 30, 0);
+    arc(this.x+this.size/150*93, this.y+this.size/150*120, this.size/150*8, this.size/150*5, 244, 354);
+    
+    //nose left-side arc
+    arc(this.x+this.size/150*90, this.y+this.size/150*116, this.size/150*3, this.size/150*6, 42, 266);
+    
+    //nose right-side bump
+    arc(this.x+this.size/150*107, this.y+this.size/150*120, this.size/150*8,this.size/150*5, 183, 288);
+    
+    //nose right-side arc
+    arc(this.x+this.size/150*110, this.y+this.size/150*116, this.size/150*3, this.size/150*6, 278, 493);
+    
+    //nose line arc
+    arc(this.x+this.size/150*109, this.y+this.size/150*104, this.size/150*2, this.size/150*11, 88, 248);
+    
+    //nose middle bump
+    arc(this.x+this.size/150*100, this.y+this.size/150*119, this.size/150*7,this.size/150*5, 28, 153);
+
+
+
+    //mouth
+    stroke(0, 0, 0);
+    noFill();
+    strokeWeight(2);
+    arc(this.x+this.size/150*100, this.y+this.size/150*137, this.size/150*49, this.size/150*6, 376, 516);     
+    
+    //left mouth edge
+    fill(0, 0, 0);  
+    ellipse(this.x+this.size/150*78,this.y+this.size/150*138,  this.size/150*1,this.size/150*2);
+    
+    //right mouth edge
+    fill(0, 0, 0);  
+    ellipse(this.x+this.size/150*123,this.y+this.size/150*138, this.size/150*1,this.size/150*2);
+    strokeWeight(1);
+    
+    //bottom of lip
+    fill(235, 185, 158);
+    arc(this.x+this.size/150*100, this.y+this.size/150*146, this.size/150*14, this.size/150*6, 401, 497);
+    strokeWeight(2);
+
+
+
+    //buckethat top
+    stroke(0, 0, 0);
+    fill(255, 255, 255);
+    arc(this.x+this.size/150*100, this.y+this.size/150*8, this.size/150*102, this.size/150*27, 182, 358);
+    
+    //buckethat middle
+    fill(255, 255, 255);
+    quad(this.x+this.size/150*50, this.y+this.size/150*35, this.x +this.size/150*49, this.y+this.size/150*7, this.x+this.size/150 *151, this.y+this.size/150*7, this.x+this.size/150*151, this.y+this.size/150*35);
+    
+    //buckethat base
+    fill(255, 255, 255);
+    quad(this.x+this.size/150*30, this.y+this.size/150*67, this.x +this.size/150*51, this.y+this.size/150*35, this.x+this.size/150 *151, this.y+this.size/150*35, this.x+this.size/150*170, this.y+this.size/150*67);
+    
+    //high hat arc
+    noFill();
+    arc(this.x+this.size/150*99, this.y+this.size/150*63, this.size/150*180, this.size/150*8, 225, 317);
+    
+    //low hat arc
+    arc(this.x+this.size/150*99, this.y+this.size/150*30, this.size/150*138, this.size/150*8, 225, 317);
+
+
+    //upper chest base
+    stroke(0, 0, 0);
+    fill(250, 53, 53);
+    quad(this.x+this.size/150*85, this.y+this.size/150*182, this.x+this.size/150*115, this.y+this.size/150*182, this.x+this.size/150*152, this.y+this.size/150*200, this.x+this.size /150*51, this.y+this.size/150*200);
+    
+    //left shoulder
+    fill(255, 255, 255);
+    quad(this.x+this.size/150*87, this.y+this.size/150*178, this.x+this.size/150*87, this.y+this.size/150*182, this.x +this.size/150*50, this.y+this.size/150*200, this.x+this.size  /150*37, this.y+this.size/150*200);
+    
+    //right shoulder
+    fill(255, 255, 255);
+    quad(this.x+this.size/150*113, this.y+this.size/150*178, this.x+this.size/150*113, this.y+this.size/150*182, this.x+this.size/150*150, this.y+this.size/150*200, this.x+this.size /150*163, this.y+this.size/150*200);
+    
+    //initials
+    fill(255, 255, 255);
+    textSize(this.size/150*18);
+    text('CC', this.x+this.size/150*85, this.y+this.size/150   *184, this.size/150*25, this.size/150*25);
+    stroke(0, 0, 0);
+};
+
+//Creates bitmojis for both the splashScreen and game screen
+var connorSplash = new connorBitmoji(65, 311, 85);
+var cyrSplash = new BitmojiCyr(275, 270, 75);
+var connorGame = new connorBitmoji(114, 88, 31);
+var cyrGame = new BitmojiCyr(276, 262, 30);
 
 //creates rocks using rock constructor
 for (var i = 0; i < numRocks; i++) {
     asteroids.push(new Asteroid(random(0, 380), random(-400, 0), 30));
 }
+
+//Splash screen that is displayed when the program starts (or when sceneNumber === 0)
+var splashScreen = function() {
+    background(33, 44, 112);
+    //Draw the two splash screen bitmojis and the splash screen ship
+    connorSplash.draw();
+    cyrSplash.draw();
+    splashShip.draw();
+    //Nested for loops and if statements to display the rocks on splash screen
+    for (var i = 0; i < 6; i++) {
+        for (var j = 0; j < 4; j++) {
+            var rockOffsetX = 13;
+            var rockSpacingX = 45;
+            var rockOffsetY = 0;
+            if (i > 2) {
+                rockOffsetX = 132;
+            }
+            if (j > 0) {
+                if (i > 2) {
+                    rockOffsetX = 81;
+                }
+            rockSpacingX = 56;
+            rockOffsetY = 105;
+            }
+            image(getImage("cute/Rock"), rockOffsetX + (rockSpacingX * i), rockOffsetY + (35 * j), 30, 50); 
+        }
+    }
+    //Draw the start button
+    startButton.draw();
+    //Text commands for partner names, project title and program description
+    fill(255, 255, 255);
+    textSize(12);
+    text("Connor Montague", 65.5, 385);
+    text("Caleb Cyr", 325, 385);
+    textSize(15);
+    text("To begin, click the start button. Move the spaceship by moving the mouse, and dodge the falling asteroids! After a while, more asteroids will appear; can you survive for all 100 seconds?", 25, 50, 350, 100);
+    textSize(25);
+    text("Asteroids", 200, 35);
+};
 
 //contains background color, all stars, and static planets
 var playScreenBackground = function() {
@@ -229,22 +674,98 @@ var playScreenBackground = function() {
     arc(362, 338, 57, 4, 23, 155);
 };
 
-
-
-
-var draw = function() {
-    //creates a grayJet using Spaceship constructor function and updates mouse positon
-    var grayJet = new Spaceship(mouseX - 40, mouseY - 50, 30);
-
-    playScreenBackground();
-    grayJet.draw();
-    
-    //for all asteroids/rocks it applies draw, motion, and hit detection methods
-    for (var i = 0; i < numRocks; i++) {
-        asteroids[i].draw();
-        asteroids[i].fall();
-        asteroids[i].hitDetect();
+//End screen that is displayed when the player either wins or loses
+var endScreen = function() {
+    background(33, 44, 112);
+    fill(255, 255, 255);
+    textAlign(CENTER, CENTER);
+    textSize(20);
+    //sets all rocks y-position back to the top of the screen if one is touched
+    for (var i = 0; i < asteroids.length; i++) {
+        asteroids[i].y = round(random(-200, -100));
+    }
+    //Displays either the win screen or loss screen, dependent on winState variable
+    if (winState === true) {
+        for (var i = 0; i < 2; i++) {
+            for (var j = 0; j < 5; j++) {
+                image(getImage("cute/Star"), 22 + (i * 308), 110 + (j * 55), 50, 60);
+            }
+        }
+        text("Congratulations! You dodged all of the rocks, but can you do it again? Click the reset button to give it another go, or click the menu button to return to the main menu.", 5, 10, 390, 130);
+        resetButton.draw();
+        menuButton.draw();
+        winShip.draw();
+        image(getImage("creatures/OhNoes-Happy"), 88, 175);
+    }
+    else if (winState === false) {
+        for (var i = 0; i < 2; i++) {
+            for (var j = 0; j < 5; j++) {
+                image(getImage("cute/Rock"), 17 + (i * 313), 85 + (j * 60), 50, 60);
+            }
+        }
+        image(getImage("creatures/OhNoes"), 75, 135);
+        image(getImage("cute/Rock"), 213, 88);
+        text("Oh noes! Your ship was hit. Click the reset button to try again, or click the menu button to return to the main menu." , 10, 10, 380, 80);
+        resetButton.draw();
+        menuButton.draw();
     }
 };
 
 
+var draw = function() {
+    if (sceneNumber === 0) {
+        splashScreen();
+    }
+    else if (sceneNumber === 1 && stillPlaying === true) {
+        //Set gameTime to the time since the program started
+        gameTime = millis();
+        /*Subtract startTime from gameTime to get the time since the start button was
+        pressed. Round and divide by 1000 to convert to seconds.  */
+        gameTime = floor((gameTime - startTime) / 1000);
+        /* creates a grayJet using Spaceship constructor function and updates mouse 
+        positon */
+        var grayJet = new Spaceship(mouseX - 40, mouseY - 50, 30);
+        //Display the bakcground, bitmojis and player jet
+        playScreenBackground();
+        connorGame.draw();
+        cyrGame.draw();
+        grayJet.draw();
+        //After 75 seconds of play, increase the number of rocks (difficulty) by 50%
+        if (gameTime === 75 && asteroids.length < numRocks * 1.5) {
+            for (var i = 0; i < 0.5 * numRocks; i++) {
+            asteroids.push(new Asteroid(random(0, 380), random(-400, 0), 30));
+            println(asteroids.length);
+            }
+        }
+        //for all asteroids/rocks it applies draw, motion, and hit detection methods
+        for (var i = 0; i < asteroids.length; i++) {
+            asteroids[i].draw();
+            asteroids[i].fall();
+            asteroids[i].hitDetect();
+        }
+        //Series of commands to display the time-based score in a box in the top right
+        fill(33, 44, 112);
+        stroke(255, 255, 255);
+        strokeWeight(2);
+        rect(292, 0, 107, 30);
+        fill(255, 255, 255);
+        textSize(20);
+        text("Score: " + gameTime, 296, 22);
+        //After 100 seconds, the player wins and goes to the end screen
+        if (gameTime >= 100) {
+            stillPlaying = false;
+            sceneNumber = 2;
+            winState = true;
+        }
+    }
+    //Displays the end screen when no longer playing and a win/lose condition is met
+    else if (sceneNumber === 2 && stillPlaying === false) {
+        endScreen();
+    }
+    //Runs the handleMouseClick method for the all buttons whenever mouse is clicked
+    mouseClicked = function() {
+    startButton.handleMouseClick();
+    resetButton.handleMouseClick();
+    menuButton.handleMouseClick();
+    };
+};
