@@ -228,10 +228,6 @@ var resetButton = new Button({
         stillPlaying = true;
         sceneNumber = 1;
         startTime = millis();
-        //sets all rocks y-position back to the top of the screen if one is touched
-        for (var i = 0; i < asteroids.length; i++) {
-            asteroids[i].y = round(random(-200, -100));
-        }
         return startTime;
     },
     color: color(255, 255, 255),
@@ -249,12 +245,6 @@ var menuButton = new Button({
         //Sets sceneNumber to 1, changing the screen displayed and reseting the timer
         stillPlaying = false;
         sceneNumber = 0;
-        startTime = 0;
-        //sets all rocks y-position back to the top of the screen if one is touched
-        for (var i = 0; i < asteroids.length; i++) {
-            asteroids[i].y = round(random(-200, -100));
-        }
-        return startTime;
     },
     color: color(255, 255, 255),
     stroke: color(0, 0, 0)
@@ -588,12 +578,11 @@ var splashScreen = function() {
                 if (i > 2) {
                     rockOffsetX = 81;
                 }
-                rockSpacingX = 56;
-                rockOffsetY = 105;
+            rockSpacingX = 56;
+            rockOffsetY = 105;
             }
             image(getImage("cute/Rock"), rockOffsetX + (rockSpacingX * i), rockOffsetY + (35 * j), 30, 50); 
         }
-
     }
     //Draw the start button
     startButton.draw();
@@ -691,31 +680,35 @@ var endScreen = function() {
     fill(255, 255, 255);
     textAlign(CENTER, CENTER);
     textSize(20);
+    //sets all rocks y-position back to the top of the screen if one is touched
+    for (var i = 0; i < asteroids.length; i++) {
+        asteroids[i].y = round(random(-200, -100));
+    }
     //Displays either the win screen or loss screen, dependent on winState variable
-        if (winState === true) {
-            for (var i = 0; i < 2; i++) {
-                for (var j = 0; j < 5; j++) {
-                    image(getImage("cute/Star"), 22 + (i * 308), 110 + (j * 55), 50, 60);
-                }
+    if (winState === true) {
+        for (var i = 0; i < 2; i++) {
+            for (var j = 0; j < 5; j++) {
+                image(getImage("cute/Star"), 22 + (i * 308), 110 + (j * 55), 50, 60);
             }
-            text("Congratulations! You dodged all of the rocks, but can you do it again? Click the reset button to give it another go, or click the menu button to return to the main menu.", 5, 10, 390, 130);
-            resetButton.draw();
-            menuButton.draw();
-            winShip.draw();
-            image(getImage("creatures/OhNoes-Happy"), 88, 175);
         }
-        else if (winState === false) {
-            for (var i = 0; i < 2; i++) {
-                for (var j = 0; j < 5; j++) {
-                    image(getImage("cute/Rock"), 17 + (i * 313), 85 + (j * 60), 50, 60);
-                }
+        text("Congratulations! You dodged all of the rocks, but can you do it again? Click the reset button to give it another go, or click the menu button to return to the main menu.", 5, 10, 390, 130);
+        resetButton.draw();
+        menuButton.draw();
+        winShip.draw();
+        image(getImage("creatures/OhNoes-Happy"), 88, 175);
+    }
+    else if (winState === false) {
+        for (var i = 0; i < 2; i++) {
+            for (var j = 0; j < 5; j++) {
+                image(getImage("cute/Rock"), 17 + (i * 313), 85 + (j * 60), 50, 60);
             }
-            image(getImage("creatures/OhNoes"), 75, 135);
-            image(getImage("cute/Rock"), 213, 88);
-            text("Oh noes! Your ship was hit. Click the reset button to try again, or click the menu button to return to the main menu." , 10, 10, 380, 80);
-            resetButton.draw();
-            menuButton.draw();
         }
+        image(getImage("creatures/OhNoes"), 75, 135);
+        image(getImage("cute/Rock"), 213, 88);
+        text("Oh noes! Your ship was hit. Click the reset button to try again, or click the menu button to return to the main menu." , 10, 10, 380, 80);
+        resetButton.draw();
+        menuButton.draw();
+    }
 };
 
 
