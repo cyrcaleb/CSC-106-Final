@@ -734,7 +734,6 @@ var draw = function() {
         if (gameTime === 75 && asteroids.length < numRocks * 1.5) {
             for (var i = 0; i < 0.5 * numRocks; i++) {
             asteroids.push(new Asteroid(random(0, 380), random(-400, 0), 30));
-            println(asteroids.length);
             }
         }
         //for all asteroids/rocks it applies draw, motion, and hit detection methods
