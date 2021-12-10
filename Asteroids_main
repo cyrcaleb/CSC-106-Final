@@ -7,7 +7,7 @@ var sceneNumber = 0;
 var stillPlaying = false;
 
 //number of starting rocks/asteroids
-var numRocks = 16;
+var numRocks = 12;
 
 //Determines what kind of message to give the user when the game ends
 var winState;
@@ -143,6 +143,7 @@ Asteroid.prototype.fall = function() {
     if (this.y > 380) {
         this.y = -50;
         this.x = random(0, 380);
+        this.rockSpeed = round(random(1,5));
     }
 };
 
@@ -159,7 +160,7 @@ Asteroid.prototype.hitDetect = function() {
     }
 };
 
-//Khan constructor function for buttons slightly modified to include colors
+//Khan constructor function for buttons modified to include color
 var Button = function(config) {
     this.x = config.x || 0;
     this.y = config.y || 0;
@@ -684,6 +685,10 @@ var endScreen = function() {
     for (var i = 0; i < asteroids.length; i++) {
         asteroids[i].y = round(random(-200, -100));
     }
+    /* Remove all extra rocks that will have spawned if the player made it to the         difficulty spike time */
+    if (asteroids.length > numRocks) {
+        asteroids.splice((numRocks), (numRocks / 2));
+    }
     //Displays either the win screen or loss screen, dependent on winState variable
     if (winState === true) {
         for (var i = 0; i < 2; i++) {
@@ -730,8 +735,8 @@ var draw = function() {
         connorGame.draw();
         cyrGame.draw();
         grayJet.draw();
-        //After 75 seconds of play, increase the number of rocks (difficulty) by 50%
-        if (gameTime === 75 && asteroids.length < numRocks * 1.5) {
+        //After 70 seconds of play, increase the number of rocks (difficulty) by 50%
+        if (gameTime === 70 && asteroids.length < numRocks * 1.5) {
             for (var i = 0; i < 0.5 * numRocks; i++) {
             asteroids.push(new Asteroid(random(0, 380), random(-400, 0), 30));
             }
